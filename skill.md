@@ -68,3 +68,7 @@ python scripts/installer.py guide windows
 python scripts/installer.py nodejs windows
 python scripts/installer.py python windows
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
