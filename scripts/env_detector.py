@@ -32,7 +32,7 @@ def detect_docker() -> Tuple[bool, str]:
             if match:
                 return True, match.group(1)
             return True, version
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -46,7 +46,7 @@ def detect_rust() -> Tuple[bool, str]:
             if match:
                 return True, match.group(1)
             return True, version
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -60,7 +60,7 @@ def detect_go() -> Tuple[bool, str]:
             if match:
                 return True, match.group(1)
             return True, version
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -70,7 +70,7 @@ def detect_yarn() -> Tuple[bool, str]:
         result = subprocess.run(["yarn", "--version"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             return True, result.stdout.strip()
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -80,7 +80,7 @@ def detect_pnpm() -> Tuple[bool, str]:
         result = subprocess.run(["pnpm", "--version"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             return True, result.stdout.strip()
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -90,9 +90,11 @@ def detect_conda() -> Tuple[bool, str]:
         result = subprocess.run(["conda", "--version"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             return True, result.stdout.strip()
-    except:
+    except Exception:
         pass
-    return False, "" -> Tuple[bool, str, str]:
+    return False, ""
+
+def detect_python() -> Tuple[bool, str, str]:
     """
     检测 Python 环境
     返回: (是否安装, 版本号, 可执行文件路径)
@@ -102,16 +104,15 @@ def detect_conda() -> Tuple[bool, str]:
             result = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=5)
             if result.returncode == 0:
                 version = result.stdout.strip() or result.stderr.strip()
-                # 提取版本号
                 match = re.search(r"Python\s+([\d\.]+)", version)
                 if match:
                     version = match.group(1)
                 # 获取完整路径
-                path_result = subprocess.run([cmd, "-c", "import sys; print(sys.executable)"], 
+                path_result = subprocess.run([cmd, "-c", "import sys; print(sys.executable)"],
                                             capture_output=True, text=True, timeout=5)
                 path = path_result.stdout.strip() if path_result.returncode == 0 else cmd
                 return True, version, path
-        except:
+        except Exception:
             continue
     return False, "", ""
 
@@ -120,18 +121,17 @@ def detect_nodejs() -> Tuple[bool, str, str]:
     检测 Node.js 环境
     返回: (是否安装, 版本号, 可执行文件路径)
     """
-    for cmd in ["node"]:
-        try:
-            result = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=5)
-            if result.returncode == 0:
-                version = result.stdout.strip().lstrip('v')
-                # 获取路径
-                path_result = subprocess.run(["where" if os.name == "nt" else "which", cmd],
-                                            capture_output=True, text=True, timeout=5)
-                path = path_result.stdout.strip().split('\n')[0] if path_result.returncode == 0 else cmd
-                return True, version, path
-        except:
-            continue
+    try:
+        result = subprocess.run(["node", "--version"], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            version = result.stdout.strip().lstrip('v')
+            # 获取路径
+            path_result = subprocess.run(["where" if os.name == "nt" else "which", "node"],
+                                        capture_output=True, text=True, timeout=5)
+            path = path_result.stdout.strip().split('\n')[0] if path_result.returncode == 0 else "node"
+            return True, version, path
+    except Exception:
+        pass
     return False, "", ""
 
 def detect_npm() -> Tuple[bool, str]:
@@ -140,7 +140,7 @@ def detect_npm() -> Tuple[bool, str]:
         result = subprocess.run(["npm", "--version"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             return True, result.stdout.strip()
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -154,7 +154,7 @@ def detect_git() -> Tuple[bool, str]:
             if match:
                 return True, match.group(1)
             return True, version
-    except:
+    except Exception:
         pass
     return False, ""
 
@@ -165,7 +165,7 @@ def detect_pip() -> Tuple[bool, str]:
             result = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=5)
             if result.returncode == 0:
                 return True, result.stdout.strip()
-        except:
+        except Exception:
             continue
     return False, ""
 
@@ -220,7 +220,6 @@ def check_missing_tools(required: List[str] = None) -> List[str]:
             missing.append("rust")
         elif tool == "docker" and not env["docker"]["installed"]:
             missing.append("docker")
-
     return missing
 
 def format_env_report() -> str:
@@ -247,7 +246,6 @@ def format_env_report() -> str:
     lines.append(f"  Git: {'✓ ' + env['git']['version'] if env['git']['installed'] else '✗ 未安装'}")
     return "\n".join(lines)
 
-# ========== 命令行入口 ==========
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--json":
         print(json.dumps(get_full_environment_report(), ensure_ascii=False, indent=2))
