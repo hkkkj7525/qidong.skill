@@ -24,6 +24,7 @@
 | Docker | Dockerfile, docker-compose.yml | docker-compose |
 
 ## 使用方法
+下载zip项目
 
 ```bash
 # 方式1：直接运行
@@ -31,6 +32,8 @@ python scripts/launcher.py <GitHub地址或本地路径>
 
 # 方式2：导入为 Claude Code Skill
 将 skill.md 和 scripts/ 目录一起导入
+
+# 方式3：直接丢进ccswitch或cherry studio的以zip方式导入
 ```
 
 ## 使用示例
